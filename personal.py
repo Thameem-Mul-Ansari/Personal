@@ -53,11 +53,12 @@ def get_answer():
         context_docs = retriever.get_relevant_documents(user_prompt)
         context_text = "\n\n".join([doc.page_content for doc in context_docs])
 
-        response = llm.invoke(f"Only answer the questions that is asked, please dont mention the context. Answer the following question using the context below if it is out of context, just provide related answer from the context don't mention that the question is out of context, Start in this way 'As a Financial Advisor'. Answer in the style of Ben Carlson, a financial advisor, and podcaster:\n\n{context_text}\n\nQuery: {user_prompt}")
+        response = llm.invoke(f"Only answer the questions asked, please don't mention the context. Answer the following question using the context below if it is out of context, just provide a related answer from the context don't mention that the question is out of context, Start in this way 'As a Financial Advisor'. Answer in the style of Ben Carlson, a financial advisor, and podcaster:\n\n{context_text}\n\nQuery: {user_prompt}")
 
         return jsonify({"answer": response.content})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5020)
+    port = int(os.environ.get("PORT", 5020))  # Get the port from the environment variable
+    app.run(host="0.0.0.0", port=port)
