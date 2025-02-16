@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-from flask_cors import CORS  # Add this import
+from flask_cors import CORS  # CORS to handle cross-origin requests
 import os
 from langchain_groq import ChatGroq
 from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -30,12 +30,12 @@ split_docs = text_splitter.split_documents(docs)
 # Create vector database
 vectors = FAISS.from_documents(split_docs, embeddings)
 
-@app.route("/get_answer", methods=["POST", "OPTIONS"])
+@app.route("/proxy/get_answer", methods=["POST", "OPTIONS"])
 def get_answer():
     if request.method == "OPTIONS":
         # Handling preflight request
         response = jsonify({"status": "ok"})
-        response.headers.add("Access-Control-Allow-Origin", "http://localhost:5173")
+        response.headers.add("Access-Control-Allow-Origin", "*")
         response.headers.add("Access-Control-Allow-Headers", "Content-Type")
         response.headers.add("Access-Control-Allow-Methods", "POST")
         return response
@@ -53,7 +53,8 @@ def get_answer():
         context_docs = retriever.get_relevant_documents(user_prompt)
         context_text = "\n\n".join([doc.page_content for doc in context_docs])
 
-        response = llm.invoke(f"Only answer the questions asked, please don't mention the context. Answer the following question using the context below if it is out of context, just provide a related answer from the context don't mention that the question is out of context, Start in this way 'As a Financial Advisor'. Answer in the style of Ben Carlson, a financial advisor, and podcaster:\n\n{context_text}\n\nQuery: {user_prompt}")
+        # Generate response using LLM
+        response = llm.invoke(f"As a Financial Advisor, answer in the style of Ben Carlson: {user_prompt} \n\nContext:\n{context_text}")
 
         return jsonify({"answer": response.content})
     except Exception as e:
