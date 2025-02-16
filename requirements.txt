@@ -13,3 +13,4 @@ PyMuPDF
 Pillow
 Flask
 Flask-cors
+gunicorn
